@@ -2,7 +2,7 @@
 -compile(export_all).
 
 % 1. Last element
-myLast([X]) -> X;
+myLast([X])   -> X;
 myLast([_|T]) -> myLast(T).
 
 % 2. Second last element
@@ -10,11 +10,11 @@ mySecondLast([X,_]) -> X;
 mySecondLast([_|T]) -> mySecondLast(T).
 
 % 3. Element at (I made it 1 based not 0 based, for later use
-element_at(L,1) -> hd(L);
+element_at(L,1)       -> hd(L);
 element_at([_|T],Pos) -> element_at(T,Pos-1).
 
 % 4. a. Length list
-len([]) -> 0;
+len([])    -> 0;
 len([_|T]) -> 1+len(T).
 
 % 4. b. Length list with fold
@@ -22,7 +22,7 @@ lenf(L) -> lists:foldl(fun(_,Len)->1+Len end, 0, L).
 
 % 5. a. Reverse list
 
-rev([]) -> [];
+rev([])    -> [];
 rev([H|T]) -> rev(T)++[H].
 
 % 5 b. Reverse with tail rec
@@ -60,36 +60,37 @@ pack_dup(_,   CurDup,       T) -> [CurDup | pack(T)].
 
 % 9. b. Same case using splitwith
 
-pack_with([]) 	 -> [];
+pack_with([])          -> [];
 pack_with([H|T]) -> {Dup, Rest} = lists:splitwith(fun(X)->X=:=H end, [H|T]),
-		    [Dup |  pack_with(Rest)].
+                    [Dup |  pack_with(Rest)].
 
 % 10. Run length encoding, similar to previous but now encode the length
 
-encode([]) 	-> [];
-encode([H|T]) 	-> {Dup, Rest} = lists:splitwith(fun(X)->X=:=H end, [H|T]),
-		   [[length(Dup), H] |  encode(Rest)].
+encode([])      -> [];
+encode([H|T])   -> {Dup, Rest} = lists:splitwith(fun(X)->X=:=H end, [H|T]),
+                   [[length(Dup), H] |  encode(Rest)].
 
 % With list comprehension
-encode_lc(L)	-> [ [length(X), hd(X)] || X <- pack(L)].
+encode_lc(L)        -> [ [length(X), hd(X)] || X <- pack(L)].
 
 % 11. Run length encoding without encoding unique elements, jeez i was
 % making this for no 10 and had deleted it 
 
-encode_mod([]) 		-> [];
-encode_mod([H,H|T]) 	-> {Dup, Rest} = lists:splitwith(fun(X)->X=:=H end, [H,H|T]),
-		   	   [[length(Dup), H] |  encode_mod(Rest)];
-encode_mod([H|T])	-> [H | encode_mod(T)].
+encode_mod([])           -> [];
+encode_mod([H,H|T])      -> {Dup, Rest} = lists:splitwith(fun(X)->X=:=H end, [H,H|T]),
+                              [[length(Dup), H] |  encode_mod(Rest)];
+encode_mod([H|T])        -> [H | encode_mod(T)].
 
 
 % With list comprehension and previous pack function
-encode_mod_lc(L)	-> [ if length(X) > 1 -> [length(X), hd(X)]; true -> hd(X) end || X <- pack(L)].
+encode_mod_lc(L)        -> [ if length(X) > 1 -> [length(X), hd(X)]; true -> hd(X) end || X <- pack(L)].
 
 % 12. Decode run length encoding from last
 
-decode([])   	    	      -> [];
-decode([H|T]) when is_list(H) -> [Len, X] = H, rep(Len, X)++decode(T);
-decode([H|T]) 	    	      -> [H | decode(T)].
+decode([])    -> [];
+decode([H|T]) when is_list(H) 
+              -> [Len, X] = H, rep(Len, X)++decode(T);
+decode([H|T]) -> [H | decode(T)].
 
 % Replicate helper, we'll use it also in other task
 rep(1,X)    -> [X];
@@ -138,9 +139,9 @@ drop(L, Nth) -> drop_nth(L, 1, Nth, []).
 
 drop_nth([],_,_,Res) -> Res;
 drop_nth([_|T], Nth, Nth, Res) % I can use remainder but this is cleaner, when Idx = Nth drop it
-		    -> drop_nth(T, 1, Nth, Res);
+                    -> drop_nth(T, 1, Nth, Res);
 drop_nth([H|T], Idx, Nth, Res)  
-		    -> drop_nth(T, Idx+1, Nth, Res++[H]).
+                    -> drop_nth(T, Idx+1, Nth, Res++[H]).
 
 % 17. Split into two parts, length of first part is given
 
@@ -155,8 +156,8 @@ split([H|T], Left, Len) -> split(T, Left++[H], Len-1).
 
 % I am lazy, i will just use the split that I made :P
 slice_sp(L, Start, End) -> [_, Slice] = split(L, Start-1),
-			   [Result,_] = split(Slice, End-Start+1),
-			   Result.
+                           [Result,_] = split(Slice, End-Start+1),
+                           Result.
 
 % Slice in a standard recursive way
 
@@ -170,20 +171,20 @@ slice([_|T], Start, End, Res) -> slice(T, Start-1, End-1, Res).
 % 19. Rotate a list N places to the left
 
 rotate_sp(L, N) when N > 0 -> [Left, Right] = split(L, N),
-		   	      Right ++ Left;
-rotate_sp(L, N) 	   -> [Left, Right] = split(L, length(L)+N),
-		   	      Right ++ Left.
+                                 Right ++ Left;
+rotate_sp(L, N)            -> [Left, Right] = split(L, length(L)+N),
+                                 Right ++ Left.
 
 % 20. Remove at
 
 % I know this is not tail recursive but I get the idea, and I am sleepy
-remove_at([_|T], 1)	-> T;
-remove_at([H|T], N)	-> [H|remove_at(T,N-1)].
+remove_at([_|T], 1)        -> T;
+remove_at([H|T], N)        -> [H|remove_at(T,N-1)].
 
 % 21. Insert at
 
-insert_at(X, L,  1)	-> [X|L];
-insert_at(X, [H|T],  P)	-> [H|insert_at(X, T,  P-1)].
+insert_at(X, L,  1)        -> [X|L];
+insert_at(X, [H|T],  P)        -> [H|insert_at(X, T,  P-1)].
 
 % 22. List containing integer at given range
 
@@ -192,14 +193,14 @@ range( End,  End) -> [End];
 range(Start, End) -> [Start|range(Start+1, End)].
 
 % Tail rec, with accum. Look ma, no reverse
-range_acc(Start,End) 	     -> range_a(Start, End, []).
+range_acc(Start,End)              -> range_a(Start, End, []).
 range_a(Start, Start, Accum) -> [Start|Accum];
 range_a(Start, End, Accum)   -> range_a(Start, End-1, [End|Accum]).
 
 % 23. Select N elements from lists randomly
 random_select(_, 0) -> [];
 random_select(List, N) -> Index = random:uniform(length(List)),
-			  [element_at(List, Index) | random_select(remove_at(List, Index), N-1)].
+                          [element_at(List, Index) | random_select(remove_at(List, Index), N-1)].
 
 % 24. Draw N different random number from the set 1..M
 
@@ -223,24 +224,24 @@ combination(N, [H|T]) -> [ [H|X] || X <- combination(N-1, T)] ++ combination(N, 
 
 group3_234(L) -> group3(L, [], [], []).
 group3([H|T], Two, Three, Four) ->  if length(Two)   < 2 -> group3(T, [H|Two], Three, Four);
-						  true   -> []
-				    end ++
-				    if length(Three) < 3 -> group3(T, Two, [H|Three], Four);
-				    		  true   -> []
-				    end ++
-				    if length(Four)  < 4 -> group3(T, Two, Three, [H|Four]);
-				    		  true   -> []
-				    end;
-group3([], Two, Three, Four) 	-> [[Two, Three, Four]].
+                                                  true   -> []
+                                    end ++
+                                    if length(Three) < 3 -> group3(T, Two, [H|Three], Four);
+                                                      true   -> []
+                                    end ++
+                                    if length(Four)  < 4 -> group3(T, Two, Three, [H|Four]);
+                                                      true   -> []
+                                    end;
+group3([], Two, Three, Four)         -> [[Two, Three, Four]].
 
 % 27. b. An generic version, group list L according to list of lengths in Lengths
 %
 % Using rep we initialize results accumulator as [[],[] ...] as many as length(Lengths).
 group(L, Lengths) -> SumLen = lists:sum(Lengths), 
-		     % some check assuring sum of length is equal to list length
-		     if SumLen =:= length(L) -> group(L, rep(length(Lengths), []), Lengths);
-		     	true 		     -> error 
-		     end.
+                     % some check assuring sum of length is equal to list length
+                     if SumLen =:= length(L) -> group(L, rep(length(Lengths), []), Lengths);
+                             true                      -> error 
+                     end.
 
 group(   [], Results, _)       -> [Results];
 
@@ -250,11 +251,11 @@ group([H|T], Results, Lengths) -> lists:flatmap(fun(Next) -> group(T, Next, Leng
 place(H, Results, Lengths)  -> expand(H, [], Results, Lengths).
 
 expand(H, Head, [T|Tail], [L|Lens]) when length(T) < L ->
-	% To keep corresponding element in head with lengths, Head need to be reversed (keeping its order)
-	[lists:reverse(Head)++[[H|T]|Tail] | expand(H, [T|Head], Tail, Lens)];
+        % To keep corresponding element in head with lengths, Head need to be reversed (keeping its order)
+        [lists:reverse(Head)++[[H|T]|Tail] | expand(H, [T|Head], Tail, Lens)];
 
 expand(H, Head, [T|Tail], [_|Lens]) ->
-	expand(H, [T|Head], Tail, Lens);
+        expand(H, [T|Head], Tail, Lens);
 
 expand(_, _, [], _) -> [].
 
@@ -265,41 +266,41 @@ lsort(L) -> lists:map(fun(LTuple)->element(2,LTuple) end, lists:keysort(1,lists:
 
 % The same solution in more readable fashion 
 l_sort(L) -> % Convert into {Len, L} Len, List tuple 
-	     LTupleList      = lists:map(fun(X)->{length(X),X} end, L),
+             LTupleList      = lists:map(fun(X)->{length(X),X} end, L),
 
-	     % Sort tuple according to first key
-	     SortedTupleList = lists:keysort(1, LTupleList),
+             % Sort tuple according to first key
+             SortedTupleList = lists:keysort(1, LTupleList),
 
-	     % Extract second element of tuple
-	     lists:map(fun(LTuple) -> element(2, LTuple) end, SortedTupleList). 
+             % Extract second element of tuple
+             lists:map(fun(LTuple) -> element(2, LTuple) end, SortedTupleList). 
 
 
 
 % 28. b. Sort list according to frequency of sublist length
 fsort(L) -> % Get lenghts of sublists and sorted it 
-	    LengthsSorted = lists:sort(lists:map(fun(X)->length(X) end, L)),
+            LengthsSorted = lists:sort(lists:map(fun(X)->length(X) end, L)),
 
-	    % Using previous assignments, getting [Freq, Len]
-	    FreqLen       = encode(LengthsSorted), 
+            % Using previous assignments, getting [Freq, Len]
+            FreqLen       = encode(LengthsSorted), 
 
-	    % Reverse to make length as key, and freq as value
-	    LenFreq	  = lists:map(fun([Freq, Len]) -> {Len, Freq} end, FreqLen),
+            % Reverse to make length as key, and freq as value
+            LenFreq          = lists:map(fun([Freq, Len]) -> {Len, Freq} end, FreqLen),
 
-	    % Now map again original list to its frequency
-	    FreqTuple	  = lists:map(fun(Elem) -> Len = length(Elem),
-	    					   {value, {Len, Freq}} = lists:keysearch(Len, 1, LenFreq),
-						   {Freq, Elem} end, L),
-	    % Sort the freq tuple
-	    Sorted	  = lists:keysort(1, FreqTuple),
+            % Now map again original list to its frequency
+            FreqTuple          = lists:map(fun(Elem) -> Len = length(Elem),
+                                                       {value, {Len, Freq}} = lists:keysearch(Len, 1, LenFreq),
+                                                   {Freq, Elem} end, L),
+            % Sort the freq tuple
+            Sorted          = lists:keysort(1, FreqTuple),
 
-	    % Extract second element of tuple
-	    lists:map(fun(LTuple) -> element(2, LTuple) end, Sorted). 
+            % Extract second element of tuple
+            lists:map(fun(LTuple) -> element(2, LTuple) end, Sorted). 
 
 % 31. Is prime
 is_prime(X) when X < 2 -> false;
 is_prime(2) -> true;
 is_prime(X) -> Divisors = lists:seq(2, round(math:sqrt(X))),
-	       lists:foldl(fun(Div, PrevCheck) -> (X rem Div =/= 0) and PrevCheck end,  true, Divisors).
+               lists:foldl(fun(Div, PrevCheck) -> (X rem Div =/= 0) and PrevCheck end,  true, Divisors).
 
 % 32. GCD ?
 gcd(A, 0) -> A;
@@ -311,7 +312,8 @@ gcd(A, B) -> gcd(B, (A rem B)).
 
 is_coprime(A,B) -> gcd(A,B) =:= 1.
 
-% 34. Euler's totient function 
+% 34. Euler's totient function, primitive version, manually counting
+% how many X among 1 .. M is coprime with M
 
 totient_phi(M)  -> length([X || X<-lists:seq(1,M), is_coprime(X,M)]).
 
@@ -319,27 +321,27 @@ totient_phi(M)  -> length([X || X<-lists:seq(1,M), is_coprime(X,M)]).
 
 prime_factors(X) when X <  3 -> [X];
 prime_factors(X) -> Divisors = lists:seq(2, round(math:sqrt(X))),
-		    Factors  = [ D || D<-Divisors, X rem D =:= 0],
-		    if Factors =:= [] -> [X];
-		       true	      -> [hd(Factors) | prime_factors(X div hd(Factors))]
-		    end.
+                    Factors  = [ D || D<-Divisors, X rem D =:= 0],
+                    if Factors =:= [] -> [X];
+                       true              -> [hd(Factors) | prime_factors(X div hd(Factors))]
+                    end.
 
 % 36. Prime factor with multiplicity, Lazy guy reuse pack
 prime_factors_mult(X) -> Factors = prime_factors(X),
-			 [{hd(F), length(F)} || F <- pack(Factors)]. 
+                         [{hd(F), length(F)} || F <- pack(Factors)]. 
 
 % 37. Back to totient using 36 with more efficient implementation
 totient_phi_power(X) ->  Factors = prime_factors_mult(X),
-			 lists:foldl(fun({P,M}, Acc) -> (P-1)*round(math:pow(P,M-1))*Acc end, 1, Factors).
+                         lists:foldl(fun({P,M}, Acc) -> (P-1)*round(math:pow(P,M-1))*Acc end, 1, Factors).
 
 % 38. Compare the two totient functions we implemented using timer:tc
 % with increasing X
 
 compare_phi_functions() ->  io:format("~10s ~15s ~15s ~n", ["X", "phi(X)", "phi_power(X)"]),
-			    io:format("~s ~n", ["  ========================================"]),
-			  [ io:format("~10w ~15w ~15w ~n", [X, element(1,timer:tc(prob, totient_phi, [X])), 
-			  				       element(1,timer:tc(prob, totient_phi_power, [X]))]) 
-			      || X <- [ round(math:pow(2, Y)) || Y<- lists:seq(1,20)]], ok.
+                            io:format("~s ~n", ["  ========================================"]),
+                          [ io:format("~10w ~15w ~15w ~n", [X, element(1,timer:tc(prob, totient_phi, [X])), 
+                                                                 element(1,timer:tc(prob, totient_phi_power, [X]))]) 
+                              || X <- [ round(math:pow(2, Y)) || Y<- lists:seq(1,20)]], ok.
 
 % Sample result of comparison :
 %         X          phi(X)    phi_power(X) 
@@ -364,7 +366,58 @@ compare_phi_functions() ->  io:format("~10s ~15s ~15s ~n", ["X", "phi(X)", "phi_
 %    262144          221902             192 
 %    524288          454542             266 
 %   1048576          968516             321 
-%ok			    
+%ok                            
 
+
+%39. Given a range of integers by its lower and upper limit, construct a list of all prime numbers in that range.
+
+prime_range(Lo, Hi) -> [X ||  X<-lists:seq(Lo, Hi), is_prime(X) ].
+
+%example :
+%prob:prime_range(10,20).
+%
+%[11,13,17,19]
+
+
+%40. (**) Goldbach's conjecture. Goldbach's conjecture says that every
+%positive even number greater than 2 is the sum of two prime numbers.
+%Example: 28 = 5 + 23. It is one of the most famous facts in number
+%theory that has not been proved to be correct in the general case. It
+%has been numerically confirmed up to very large numbers (much larger
+%than we can go with our Prolog system). Write a predicate to find the
+%two prime numbers that sum up to a given even integer. 
+
+
+goldbach(4) -> {2,2};	      % special case i don't want to deal with
+goldbach(X) when X < 3 -> []; % less than equal 2 ignore, outside conjecture
+goldbach(X) -> OddTillHalfX = lists:seq(3, (X div 2) + 1, 2),
+               AllPairs     = [ {Y, X-Y} || Y <- OddTillHalfX, is_prime(Y), is_prime(X-Y)],
+	       hd(AllPairs). 
+        
+%41. (**) Given a range of integers by its lower and upper limit, print a
+%list of all even numbers and their Goldbach composition.
+%
+%In most cases, if an even number is written as the sum of two prime
+%numbers, one of them is very small. Very rarely, the primes are both
+%bigger than say 50. Try to find out how many such cases there are in the
+%range 2..3000. 
+%
+%Example:
+%prob:goldbach_list(9, 20)
+%10 = 3 + 7
+%12 = 5 + 7
+%14 = 3 + 11
+%16 = 3 + 13
+%18 = 5 + 13
+%20 = 3 + 17
+
+goldbach_list(Lo, Hi) ->  goldbach_list(Lo, Hi, 1).
+
+% Find cases where primes are both bigger than Min 
+
+goldbach_list(Lo, Hi, Min) -> Start = if Lo rem 2 =:= 1 -> Lo+1; true-> Lo end,
+			 Results = [goldbach(X) || X <- lists:seq(Start, Hi, 2)],
+			 [ io:format("~w = ~w + ~w ~n", [X+Y,X,Y] ) || {X, Y} <- Results, X> Min, Y> Min],
+			 ok.
 
 

@@ -332,4 +332,39 @@ prime_factors_mult(X) -> Factors = prime_factors(X),
 totient_phi_power(X) ->  Factors = prime_factors_mult(X),
 			 lists:foldl(fun({P,M}, Acc) -> (P-1)*round(math:pow(P,M-1))*Acc end, 1, Factors).
 
+% 38. Compare the two totient functions we implemented using timer:tc
+% with increasing X
+
+compare_phi_functions() ->  io:format("~10s ~15s ~15s ~n", ["X", "phi(X)", "phi_power(X)"]),
+			    io:format("~s ~n", ["  ========================================"]),
+			  [ io:format("~10w ~15w ~15w ~n", [X, element(1,timer:tc(prob, totient_phi, [X])), 
+			  				       element(1,timer:tc(prob, totient_phi_power, [X]))]) 
+			      || X <- [ round(math:pow(2, Y)) || Y<- lists:seq(1,20)]], ok.
+
+% Sample result of comparison :
+%         X          phi(X)    phi_power(X) 
+%  ======================================== 
+%         2               3               4 
+%         4               4               5 
+%         8               5               5 
+%        16               7               6 
+%        32              15               7 
+%        64              30               8 
+%       128              59               9 
+%       256             120              11 
+%       512             263              13 
+%      1024             562              17 
+%      2048            1187              21 
+%      4096            2516              33 
+%      8192            5317              45 
+%     16384           11162              56 
+%     32768           23343              71 
+%     65536           47926              92 
+%    131072          100166             134 
+%    262144          221902             192 
+%    524288          454542             266 
+%   1048576          968516             321 
+%ok			    
+
+
 

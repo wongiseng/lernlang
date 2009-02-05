@@ -371,12 +371,39 @@ compare_phi_functions() ->  io:format("~10s ~15s ~15s ~n", ["X", "phi(X)", "phi_
 
 %39. Given a range of integers by its lower and upper limit, construct a list of all prime numbers in that range.
 
-prime_range(Lo, Hi) -> [X ||  X<-lists:seq(Lo, Hi), is_prime(X) ].
-
 %example :
 %prob:prime_range(10,20).
-%
 %[11,13,17,19]
+
+prime_range(Lo, Hi) -> [X ||  X<-lists:seq(Lo, Hi), is_prime(X) ].
+
+% Generate list of primes first with sieve until Hi, and then filtered
+% out the one less than Lo
+
+sieve(X) when integer(X) -> sieve(lists:seq(2, X));
+sieve([H|T]) 		 -> [H|sieve( lists:filter(fun(X) -> X rem H /= 0 end, T))];
+sieve([])    		 -> [].
+
+prime_range_sieve(Lo, Hi) -> lists:filter(fun(X) -> X>=Lo end, sieve(Hi)).
+
+% Sieve version turns out to be slower after X > 8192. Before that its faster
+%[ {X, element(1,timer:tc(prob, prime_range, [1,X])), element(1,timer:tc(prob, prime_range_sieve, [1,X]))} || X<-[ round(math:pow(2, Y)) || Y<- lists:seq(1,16)] ].
+%[{2,4,4},
+% {4,7,4},
+% {8,9,7},
+% {16,20,12},
+% {32,47,29},
+% {64,121,71},
+% {128,343,173},
+% {256,863,453},
+% {512,2381,1497},
+% {1024,6718,4141},
+% {2048,17755,13974},
+% {4096,42781,31949},
+% {8192,113940,102521},
+% {16384,297081,367245},
+% {32768,817112,1166379},
+% {65536,2250948,3942746}]
 
 
 %40. (**) Goldbach's conjecture. Goldbach's conjecture says that every
@@ -421,3 +448,40 @@ goldbach_list(Lo, Hi, Min) -> Start = if Lo rem 2 =:= 1 -> Lo+1; true-> Lo end,
 			 ok.
 
 
+% 49. Gray codes :
+% An n-bit Gray code is a sequence of n-bit strings constructed
+% according to certain rules. For example,
+%
+% n = 1: C(1) = ['0','1'].
+% n = 2: C(2) = ['00','01','11','10'].
+% n = 3: C(3) = ['000','001','011','010',´110´,´111´,´101´,´100´].
+%
+% Find out the construction rules and write a predicate with the
+% following specification:
+%
+% % gray(N,C) :- C is the N-bit Gray code
+%
+% Can you apply the method of "result caching" in order to make the
+% predicate more efficient, when it is to be used repeatedly?
+%
+% Example in Haskell:
+% gray 3
+% ["000","001","011","010","110","111","101","100"]
+
+% Text book gray code prepending 0 to gray(n-1) and 1 to reverse of gray(n-1)
+gray(0)   ->   [[]];
+gray(N)	  ->   Prev = gray(N-1),
+	       [[$0|X] || X <- Prev] ++ [[$1|X] || X <- lists:reverse(Prev)].
+
+% My bad_gray code, i see different pattern, what I do was
+% duplicating gray(n-1) and convolute/padding with 0,1,1,0
+
+bad_gray(1) -> ["0","1"];
+bad_gray(N) -> Dup = dup_basic(bad_gray(N-1)),
+	       convolute(Dup, ["0","1","1","0"]).
+
+convolute(A, B) -> convolute(A,B,[],B).
+
+convolute([],_,Res,_) -> lists:reverse(Res);
+convolute([HA|TA],[HB|TB],Res,B) -> convolute(TA, TB, [HA++HB|Res], B);
+convolute(A, [], Res, B)	 -> convolute(A, B, Res, B).
